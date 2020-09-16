@@ -29,9 +29,6 @@
                         <div class="form-field">
                             <input class="form-control" type="text" name="zipcode" placeholder="Zipcode..">
                         </div>
-                        <div class="form-field">
-                            <input class="form-control" type="text" name="country" placeholder="Country..">
-                        </div>
                     </div>
                     <br>
                         <input id="form-button" class="btn btn-success btn-block" type="submit" value="Continue">
@@ -65,7 +62,7 @@
 
     <script type="text/javascript">
         var shipping = "{{order.shipping}}"
-        var total = '{{order.et_cart_toal|floatformat:2}}'
+        var total = '{{order.get_cart_total}}'
 
         if(shipping == 'False'){
             document.getElementById('shipping-info').innerHTML = ''
@@ -80,18 +77,18 @@
             document.getElementById('payment-info').classList.remove('hidden');
         }
 
-        var form = document.getElementById('form')
+        var form = document.getElementById('form');
         form.addEventListener('submit', function(e){
             e.preventDefault()
             console.log('Form Submitted..')
             document.getElementById('form-button').classList.add('hidden');
             document.getElementById('payment-info').classList.remove('hidden');
         })
-        document.getElementById('make-payment').addEventListener('click', function (){
-            submit.FormData()
+        document.getElementById('make-payment').addEventListener('click', function (e){
+            submitFormData()
         })
 
-        function submitFormdata(){
+        function submitFormData(){
             console.log('Payment Button Click');
 
             var userFormData = {
@@ -105,7 +102,6 @@
                 'city' : null,
                 'sate' : null,
                 'zipcode' : null,
-                'country' : null
             }
 
             if(shipping != 'false'){
@@ -113,7 +109,6 @@
                 shippingInfo.city = form.city.value
                 shippingInfo.state = form.state.value
                 shippingInfo.zipcode = form.zipcode.value
-                shippingInfo.country = form.country.value
             }
 
             if(user == 'AnonymousUser'){
@@ -124,6 +119,22 @@
             console.log('Shipping Info:', shippingInfo)
             console.log('User info:', userFormData)
 
+            var url = '/process_order/'
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-type' : 'application/json',
+                    'X-CSRFToken' : csrftoken
+                },
+                body:JSON.stringify({'form': userFormData, 'shipping': shippingInfo}),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log('Success', data)
+                alert('Transaction Completed')
+                window.location.href = '{% url 'store' %}'
+                })
         }
     </script>
 
